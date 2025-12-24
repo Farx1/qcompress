@@ -19,7 +19,7 @@
         "line3": "Tensor-Train"
       },
       "subtitle": "Reduce LLM size by {sizeReduction} while maintaining {performanceRetention} performance retention using advanced Tensor-Train decomposition",
-      "ctaPrimary": "Get Started Free",
+      "ctaPrimary": "Get Started",
       "ctaSecondary": "Learn More",
       "stats": {
         "sizeReduction": "Size Reduction",

@@ -63,28 +63,21 @@ export function HoverBorderGradient({
       }}
       onMouseLeave={() => setHovered(false)}
       className={cn(
-        "relative flex rounded-full border content-center bg-black/20 hover:bg-black/10 transition duration-500 items-center flex-col flex-nowrap gap-10 h-min justify-center overflow-visible p-px decoration-clone w-fit",
+        "relative flex rounded-full border content-center bg-black/20 hover:bg-black/10 transition duration-500 items-center justify-center overflow-hidden p-[1px] decoration-clone w-fit",
         containerClassName
       )}
+      style={{
+        padding: "1px",
+      }}
       {...props}
     >
-      <div
-        className={cn(
-          "w-auto text-white z-10 bg-black px-4 py-2 rounded-[inherit]",
-          className
-        )}
-      >
-        {children}
-      </div>
       <motion.div
         className={cn(
-          "flex-none inset-0 overflow-hidden absolute z-0 rounded-[inherit]"
+          "absolute inset-0 overflow-hidden rounded-[inherit]"
         )}
         style={{
           filter: "blur(2px)",
-          position: "absolute",
-          width: "100%",
-          height: "100%",
+          zIndex: 0,
         }}
         initial={{ background: movingMap[direction] }}
         animate={{
@@ -94,7 +87,25 @@ export function HoverBorderGradient({
         }}
         transition={{ ease: "linear", duration: duration ?? 1 }}
       />
-      <div className="bg-black absolute z-1 flex-none inset-[2px] rounded-[100px]" />
+      <div 
+        className="absolute inset-[2px] bg-black rounded-[100px] pointer-events-none" 
+        style={{
+          zIndex: 1,
+        }}
+      />
+      <div
+        className={cn(
+          "relative text-white z-10 bg-black px-4 py-2 rounded-[inherit] flex items-center justify-center",
+          className
+        )}
+        style={{
+          position: "relative",
+          left: 0,
+          right: 0,
+        }}
+      >
+        {children}
+      </div>
     </Tag>
   )
 }

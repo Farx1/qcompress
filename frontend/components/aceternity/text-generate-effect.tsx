@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
-import { motion, stagger, useAnimate } from "framer-motion"
+import React from "react"
+import { motion } from "framer-motion"
 import { cn } from "@/lib/cn"
 
 export const TextGenerateEffect = ({
@@ -15,48 +15,32 @@ export const TextGenerateEffect = ({
   filter?: boolean
   duration?: number
 }) => {
-  const [scope, animate] = useAnimate()
-  let wordsArray = words.split(" ")
-  useEffect(() => {
-    animate(
-      "span",
-      {
-        opacity: 1,
-        filter: filter ? "blur(0px)" : "none",
-      },
-      {
-        duration: duration ? duration : 1,
-        delay: stagger(0.2),
-      }
-    )
-  }, [scope.current])
-
-  const renderWords = () => {
-    return (
-      <motion.div ref={scope}>
-        {wordsArray.map((word, idx) => {
-          return (
-            <motion.span
-              key={word + idx}
-              className="text-white opacity-0"
-              style={{
-                filter: filter ? "blur(10px)" : "none",
-              }}
-            >
-              {word}{" "}
-            </motion.span>
-          )
-        })}
-      </motion.div>
-    )
-  }
+  const wordsArray = words.split(" ")
 
   return (
     <div className={cn("font-bold", className)}>
-      <div className="mt-4">
-        <div className="text-white text-2xl leading-snug tracking-wide">
-          {renderWords()}
-        </div>
+      <div className="text-white leading-snug tracking-wide inline-block">
+        {wordsArray.map((word, idx) => {
+          return (
+            <React.Fragment key={`${word}-${idx}`}>
+              <motion.span
+                className="inline-block text-white"
+                initial={{ opacity: 0, filter: filter ? "blur(10px)" : "none" }}
+                animate={{ opacity: 1, filter: filter ? "blur(0px)" : "none" }}
+                transition={{ 
+                  duration: duration || 0.5, 
+                  delay: idx * 0.15,
+                  ease: "easeOut"
+                }}
+              >
+                {word}
+              </motion.span>
+              {idx < wordsArray.length - 1 && (
+                <span className="inline-block" style={{ width: "0.3em", minWidth: "0.3em" }} aria-hidden="true"> </span>
+              )}
+            </React.Fragment>
+          )
+        })}
       </div>
     </div>
   )

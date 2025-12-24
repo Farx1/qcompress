@@ -106,30 +106,20 @@ export default function Home() {
         {/* Hero Content */}
         <div className="container mx-auto max-w-7xl relative z-10 px-4 py-32">
           <div className="text-center space-y-8" data-animate="fade-up">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-block"
-            >
-              <HoverBorderGradient
-                containerClassName="inline-block"
-                className="text-sm font-medium px-6 py-2"
-              >
-                <span className="flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  {t('hero.badge')}
-                </span>
-              </HoverBorderGradient>
-            </motion.div>
-
             {/* Title with TextGenerateEffect */}
             <div className="space-y-4">
-              <TextGenerateEffect
-                words={t('hero.title.line1') + ' ' + t('hero.title.line2') + ' ' + t('hero.title.line3')}
-                className="text-5xl md:text-7xl lg:text-8xl font-bold text-white"
-              />
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight">
+                <TextGenerateEffect
+                  words={t('hero.title.line1') + ' ' + t('hero.title.line2') + ' ' + t('hero.title.line3')}
+                  className="block"
+                />
+              </h1>
+              {/* Fallback title in case animation doesn't work */}
+              <noscript>
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight">
+                  {t('hero.title.line1')} {t('hero.title.line2')} {t('hero.title.line3')}
+                </h1>
+              </noscript>
             </div>
 
             {/* Subtitle */}
@@ -152,7 +142,7 @@ export default function Home() {
               transition={{ delay: 1 }}
               className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8"
             >
-              <Link href={`/${locale}/dashboard`}>
+              <Link href={`/${locale}/dashboard`} className="inline-block">
                 <MovingBorderButton
                   borderRadius="1.5rem"
                   className="bg-black text-white border-white px-8 py-4 text-lg font-semibold"
@@ -161,12 +151,14 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-5 w-5 inline" />
                 </MovingBorderButton>
               </Link>
-              <HoverBorderGradient
-                containerClassName="inline-block"
-                className="text-lg font-medium px-8 py-4"
-              >
-                {t('hero.ctaSecondary')}
-              </HoverBorderGradient>
+              <Link href="#features" className="inline-block">
+                <HoverBorderGradient
+                  containerClassName="cursor-pointer"
+                  className="text-lg font-medium px-8 py-4"
+                >
+                  {t('hero.ctaSecondary')}
+                </HoverBorderGradient>
+              </Link>
             </motion.div>
 
             {/* Stats with GlareCard */}
