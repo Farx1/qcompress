@@ -1,0 +1,132 @@
+{
+  "common": {
+    "appName": "QCompress",
+    "tagline": "Compression Quantique de Modèles",
+    "getStarted": "Commencer",
+    "learnMore": "En savoir plus",
+    "dashboard": "Tableau de bord",
+    "results": "Résultats",
+    "features": "Fonctionnalités",
+    "howItWorks": "Comment ça marche",
+    "benchmarks": "Benchmarks"
+  },
+  "home": {
+    "hero": {
+      "badge": "Technologie de Compression Inspirée du Quantique",
+      "title": {
+        "line1": "Compressez vos",
+        "line2": "LLMs avec",
+        "line3": "Tensor-Train"
+      },
+      "subtitle": "Réduisez la taille des LLM de {sizeReduction} tout en conservant {performanceRetention} des performances grâce à la décomposition Tensor-Train avancée",
+      "ctaPrimary": "Commencer gratuitement",
+      "ctaSecondary": "En savoir plus",
+      "stats": {
+        "sizeReduction": "Réduction de taille",
+        "performanceRetention": "Rétention de performance",
+        "speedGain": "Gain de vitesse"
+      },
+      "visual": {
+        "title": "Décomposition Tensorielle",
+        "subtitle": "Algorithme de compression avancé",
+        "originalSize": "Taille originale",
+        "compressedSize": "Taille compressée",
+        "performance": "Performance"
+      }
+    },
+    "features": {
+      "title": "Fonctionnalités Puissantes",
+      "subtitle": "Tout ce dont vous avez besoin pour compresser et déployer des LLM efficacement",
+      "item1": {
+        "title": "Compression Tensor-Train",
+        "description": "Réduisez la taille du modèle de 5 à 10x grâce à la décomposition tensorielle avancée"
+      },
+      "item2": {
+        "title": "Surveillance en temps réel",
+        "description": "Suivez les métriques de compression en direct via WebSocket"
+      },
+      "item3": {
+        "title": "Benchmarks Officiels",
+        "description": "Tests GLUE, SQuAD, Perplexity et Latence"
+      },
+      "item4": {
+        "title": "Export Multi-Format",
+        "description": "Exportez en PyTorch, SafeTensors ou ONNX"
+      },
+      "item5": {
+        "title": "Performance Optimisée",
+        "description": "38% d'inférence plus rapide et 52% de réduction mémoire"
+      }
+    },
+    "howItWorks": {
+      "title": "Comment utiliser QCompress",
+      "subtitle": "Un processus simple en 6 étapes pour compresser vos modèles",
+      "step1": {
+        "title": "Sélectionnez votre modèle",
+        "description": "Choisissez parmi 12+ modèles préchargés ou chargez n'importe quel modèle depuis Hugging Face"
+      },
+      "step2": {
+        "title": "Configurez les paramètres",
+        "description": "Définissez le ratio de compression, le rang cible et le poids de pénalité pour des résultats optimaux"
+      },
+      "step3": {
+        "title": "Lancez la compression",
+        "description": "Démarrez le processus de compression et suivez la progression en temps réel"
+      },
+      "step4": {
+        "title": "Exécutez les benchmarks",
+        "description": "Testez automatiquement le modèle compressé sur les benchmarks officiels"
+      },
+      "step5": {
+        "title": "Analysez les résultats",
+        "description": "Visualisez les métriques détaillées comparant l'original et le compressé"
+      },
+      "step6": {
+        "title": "Téléchargez et déployez",
+        "description": "Exportez votre modèle compressé et déployez-le n'importe où"
+      }
+    },
+    "benchmarks": {
+      "title": "Résultats des Benchmarks",
+      "subtitle": "Métriques de performance réelles des modèles compressés",
+      "original": "Original",
+      "compressed": "Compressé",
+      "retention": "Rétention",
+      "latencyDescription": "Vitesse d'inférence (ms, plus bas est mieux)",
+      "performanceDescription": "Score de performance"
+    },
+    "cta": {
+      "title": "Prêt à compresser vos modèles ?",
+      "subtitle": "Commencez à compresser vos LLM dès aujourd'hui et réduisez vos coûts d'inférence de 50%",
+      "button": "Lancer le tableau de bord"
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord de compression",
+    "overview": "Vue d'ensemble",
+    "monitoring": "Surveillance",
+    "benchmarks": "Benchmarks",
+    "ttCores": "Cœurs TT",
+    "chatArena": "Arena de chat"
+  },
+  "results": {
+    "title": "Résultats de compression",
+    "subtitle": "Workflow complet : compression → benchmarks → analyse",
+    "steps": {
+      "results": "Résultats",
+      "benchmarks": "Benchmarks",
+      "export": "Export"
+    },
+    "summary": {
+      "complete": "Workflow terminé",
+      "compressionEfficiency": "Efficacité de compression",
+      "performanceRetention": "Rétention de performance",
+      "speedImprovement": "Amélioration de vitesse",
+      "benchmarksPassed": "Benchmarks réussis"
+    },
+    "actions": {
+      "exportModel": "Exporter le modèle",
+      "newCompression": "Nouvelle compression"
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "common": {
+    "appName": "QCompress",
+    "tagline": "Quantum Model Compression",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "dashboard": "Dashboard",
+    "results": "Results",
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "benchmarks": "Benchmarks"
+  },
+  "home": {
+    "hero": {
+      "badge": "Quantum-Inspired Compression Technology",
+      "title": {
+        "line1": "Compress Your",
+        "line2": "LLMs with",
+        "line3": "Tensor-Train"
+      },
+      "subtitle": "Reduce LLM size by {sizeReduction} while maintaining {performanceRetention} performance retention using advanced Tensor-Train decomposition",
+      "ctaPrimary": "Get Started Free",
+      "ctaSecondary": "Learn More",
+      "stats": {
+        "sizeReduction": "Size Reduction",
+        "performanceRetention": "Performance Retention",
+        "speedGain": "Speed Gain"
+      },
+      "visual": {
+        "title": "Tensor Decomposition",
+        "subtitle": "Advanced compression algorithm",
+        "originalSize": "Original Size",
+        "compressedSize": "Compressed Size",
+        "performance": "Performance"
+      }
+    },
+    "features": {
+      "title": "Powerful Features",
+      "subtitle": "Everything you need to compress and deploy LLMs efficiently",
+      "item1": {
+        "title": "Tensor-Train Compression",
+        "description": "Reduce model size by 5-10x using advanced tensor decomposition"
+      },
+      "item2": {
+        "title": "Real-time Monitoring",
+        "description": "Watch compression metrics stream live through WebSocket"
+      },
+      "item3": {
+        "title": "Official Benchmarks",
+        "description": "GLUE, SQuAD, Perplexity, and Latency tests"
+      },
+      "item4": {
+        "title": "Multi-Format Export",
+        "description": "Export in PyTorch, SafeTensors, or ONNX formats"
+      },
+      "item5": {
+        "title": "Performance Optimized",
+        "description": "38% faster inference and 52% memory reduction"
+      }
+    },
+    "howItWorks": {
+      "title": "How to Use QCompress",
+      "subtitle": "A simple 6-step process to compress your models",
+      "step1": {
+        "title": "Select Your Model",
+        "description": "Choose from 12+ pre-loaded models or load any model from Hugging Face"
+      },
+      "step2": {
+        "title": "Configure Parameters",
+        "description": "Set compression ratio, target rank, and penalty weight for optimal results"
+      },
+      "step3": {
+        "title": "Launch Compression",
+        "description": "Start the compression process and monitor progress in real-time"
+      },
+      "step4": {
+        "title": "Run Benchmarks",
+        "description": "Automatically test the compressed model on official benchmarks"
+      },
+      "step5": {
+        "title": "Analyze Results",
+        "description": "View detailed visualizations and metrics comparing original vs compressed"
+      },
+      "step6": {
+        "title": "Download & Deploy",
+        "description": "Export your compressed model and deploy it anywhere"
+      }
+    },
+    "benchmarks": {
+      "title": "Benchmark Results",
+      "subtitle": "Real performance metrics from compressed models",
+      "original": "Original",
+      "compressed": "Compressed",
+      "retention": "Retention",
+      "latencyDescription": "Inference Speed (ms, lower is better)",
+      "performanceDescription": "Performance Score"
+    },
+    "cta": {
+      "title": "Ready to Compress Your Models?",
+      "subtitle": "Start compressing your LLMs today and reduce your inference costs by 50%",
+      "button": "Launch Dashboard"
+    }
+  },
+  "dashboard": {
+    "title": "Compression Dashboard",
+    "overview": "Overview",
+    "monitoring": "Monitoring",
+    "benchmarks": "Benchmarks",
+    "ttCores": "TT Cores",
+    "chatArena": "Chat Arena"
+  },
+  "results": {
+    "title": "Compression Results",
+    "subtitle": "Complete workflow: compression → benchmarks → analysis",
+    "steps": {
+      "results": "Results",
+      "benchmarks": "Benchmarks",
+      "export": "Export"
+    },
+    "summary": {
+      "complete": "Workflow Complete",
+      "compressionEfficiency": "Compression Efficiency",
+      "performanceRetention": "Performance Retention",
+      "speedImprovement": "Speed Improvement",
+      "benchmarksPassed": "Benchmarks Passed"
+    },
+    "actions": {
+      "exportModel": "Export Model",
+      "newCompression": "Start New Compression"
+    }
+  }
+}
