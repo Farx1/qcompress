@@ -1,0 +1,21 @@
+# Core dependencies
+torch>=2.2
+transformers>=4.41
+datasets>=2.19
+accelerate>=0.31
+
+# Tensor network dependencies
+einops>=0.8
+opt-einsum>=3.3
+
+# Utilities
+pyyaml>=6.0.1
+numpy>=1.26
+scipy>=1.11
+tqdm>=4.64
+
+# Testing
+pytest>=7.0
+
+# Data processing (if needed for benchmarks/analysis)
+pandas>=2.0 

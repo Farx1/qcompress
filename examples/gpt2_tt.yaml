@@ -1,0 +1,32 @@
+model: gpt2  # HF model id
+seed: 42
+budget: 10x   # target memory compression (informative; not enforced yet will need to be worked out)
+
+targets:
+  # Embedding (token embedding)
+  - path: transformer.wte
+    decomp: TT
+    in_modes:  [17,17,17,10]   # ≈ 49130; will be auto-padded/trimmed to vocab size
+    out_modes: [16,16,3]       # 16*16*3 = 768 (n_embd)
+    ranks:     [1, 16, 16, 1]
+    init: random   # random | ttsvd (future) | copy
+    penalty:
+      type: renyi
+      alpha: 2.0
+      lambda: 1.0e-4
+
+  # MLP up-proj: c_fc (d -> 4d)
+  - path: transformer.h[*].mlp.c_fc
+    decomp: TT
+    in_modes:  [16,16,3]       # 768
+    out_modes: [64,12,4]       # 3072 = 64*12*4
+    ranks:     [1, 16, 16, 1]
+    init: random
+
+  # MLP down-proj: c_proj (4d -> d)
+  - path: transformer.h[*].mlp.c_proj
+    decomp: TT
+    in_modes:  [64,12,4]
+    out_modes: [16,16,3]
+    ranks:     [1, 16, 16, 1]
+    init: random 
