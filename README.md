@@ -1,6 +1,22 @@
 # 🧠 QCompress
 
+[![CI](https://github.com/Farx1/qcompress/actions/workflows/ci.yml/badge.svg)](https://github.com/Farx1/qcompress/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**Tensor-Train (TT-SVD) replacement of the linear layers of Hugging Face Transformers, with error bounds, property tests and a reproducible ratio-vs-perplexity benchmark.**
+
 A quantum-inspired compression framework for neural networks (LLMs/Transformers) using Tensor-Train (TT) decomposition. I built this project to explore how tensor networks can compress large language models. The framework includes a real-time visualization dashboard, WebSocket streaming, and a modern Next.js interface with REST API.
+
+## Quickstart
+
+Library and benchmark only (no web app). Requires the benchmark script from #9 (and #2/#3 it builds on).
+
+```bash
+git clone https://github.com/Farx1/qcompress && cd qcompress
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+python -m scripts.reproduce_compression --skip-real   # drop --skip-real to also run distilgpt2 + WikiText-2 (~350 MB download)
+```
 
 ## 📦 Technologies
 
@@ -253,6 +269,10 @@ Run the test suite:
 ```bash
 python -m pytest
 ```
+
+## Citation
+
+If you use QCompress, please cite it with the metadata in [`CITATION.cff`](CITATION.cff) (added in #8; GitHub shows a "Cite this repository" button once it is on `main`), and cite Oseledets (2011) for TT-SVD and Novikov et al. (2015) for TT layers (see [docs/THEORY.md](docs/THEORY.md)).
 
 ## 📄 License
 
