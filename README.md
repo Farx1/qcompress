@@ -102,6 +102,32 @@ During this project, I've gained deep insights into tensor networks, neural netw
 
 This project helped me understand the intersection of quantum-inspired algorithms, deep learning, and modern web development. It was more than just implementing compression—it was about building a complete system from mathematical foundations to user interfaces, with real-time capabilities and robust error handling.
 
+## 📊 Results
+
+Produced by `python -m scripts.reproduce_compression` (CPU, Python 3.11, torch 2.14.1, transformers 5.20.1); raw numbers in [`results/compression.json`](results/compression.json). SVD = truncated SVD of each weight with at most as many parameters as its TT replacement.
+
+**Random-init GPT-2** `GPT2Config(vocab_size=256, n_positions=64, n_embd=64, n_layer=2, n_head=4)`, 3 seeds, mean ± std of the logits error.
+
+| TT rank | TT ratio | TT logits rel. err | SVD ratio (equal params) | SVD logits rel. err |
+|---|---|---|---|---|
+| full | 0.93x | 9.99e-07 ± 3.1e-08 | 0.93x | 0.182 ± 0.0058 |
+| 32 | 0.93x | 9.99e-07 ± 3.1e-08 | 0.93x | 0.182 ± 0.0058 |
+| 16 | 1.56x | 0.445 ± 0.0066 | 1.56x | 0.427 ± 0.0078 |
+| 8 | 5.47x | 0.555 ± 0.0036 | 5.76x | 0.553 ± 0.0024 |
+
+**distilgpt2** (pretrained), perplexity on the first 4096 tokens of WikiText-2 (raw) test in 512-token chunks. Dense perplexity: 54.55.
+
+| TT rank | TT ratio | TT logits rel. err | TT ppl | SVD ratio (equal params) | SVD logits rel. err | SVD ppl |
+|---|---|---|---|---|---|---|
+| full | 0.99x | 1.55e-06 | 54.55 | 0.99x | 0.267 | 245.71 |
+| 32 | 9.22x | 1.02 | 5291.20 | 9.23x | 0.569 | 6970.42 |
+| 16 | 34.81x | 0.801 | 3506.91 | 35.89x | 0.982 | 4086.28 |
+| 8 | 119.81x | 0.8 | 3480.67 | 137.69x | 0.778 | 3606.38 |
+
+TT on attn.c_attn, attn.c_proj, mlp.c_fc, mlp.c_proj of every block, d=3, TT-SVD init, no fine-tuning. Ratio = dense / compressed parameters of those layers (weights + biases).
+
+Without fine-tuning, every truncated rank tested here destroys the pretrained model (perplexity in the thousands), for TT and for SVD alike; full TT rank is exact but compresses nothing (see docs/THEORY.md in #6). These are starting points for fine-tuning, not usable compressed models.
+
 ## 💭 How can it be improved?
 
 - **Efficient Contractions**: Replace full weight reconstruction with direct TT contractions to avoid materializing the full matrix, significantly improving speed for large models.
