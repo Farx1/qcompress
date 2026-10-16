@@ -27,7 +27,8 @@ jobs:
         run: |
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -r requirements.txt pytest-cov
-      - name: Test (speed tests skipped: wall-clock asserts are flaky on shared runners)
+      # Speed tests skipped: wall-clock asserts are flaky on shared runners.
+      - name: Test
         run: python -m pytest --cov=src --cov-report=term-missing --cov-fail-under=56 --ignore=tests/test_tt_layers_speed.py
 
   lint:
