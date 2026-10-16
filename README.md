@@ -57,6 +57,7 @@ Here's what you can do with QCompress:
 - **SafeTensors export fails on tied weights** (e.g. GPT-2 `wte` / `lm_head`), because `save_file` rejects shared tensors.
 - **Recipe engine (`src/qtc`)**: embedding modes must multiply exactly to the vocab size; there is no auto-padding (on `main` a mismatch hangs, fixed in #1). `init: ttsvd` / `copy` and HF `Conv1D` support are being fixed in PRs #2 and #3.
 - **Measured so far** (with #3, random-init `GPT2Config(vocab_size=64, n_positions=16, n_embd=16, n_layer=1, n_head=2)`, wte + c_attn + c_fc + c_proj): full TT rank reproduces the logits (rel. err 4.8e-07) but uses 1.9x *more* parameters (7616 vs 3968); rank 8 gives 1.88x fewer parameters at 0.39 logits rel. err. No trained checkpoint has been measured.
+- **Theory**: the TT-SVD error bound, the parameter-count formula and why full TT rank always uses more parameters than the dense matrix are in [docs/THEORY.md](docs/THEORY.md).
 
 ## 👩🏽‍🍳 The Process
 
