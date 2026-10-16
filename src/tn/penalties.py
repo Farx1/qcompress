@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 import torch
 from torch import nn
+from .tt_layers import TTEmbedding
 from .math_utils import unfolding_singular_values, renyi_entropy, shannon_entropy, nuclear_norm
 
 
@@ -29,6 +30,8 @@ def attach_penalty_to_module(module: nn.Module, cfg: Dict):
         
         try:
             W = module.reconstruct_weight().detach()
+            if isinstance(module, TTEmbedding):
+                W = W.t()  # reconstruct_weight is (vocab, dim); the TT-matrix is (dim, vocab)
             if W is None:
                 return
             

@@ -1,6 +1,8 @@
 import torch
 from typing import List, Optional
 
+from .tt_layers import tt_tensor
+
 
 def _prod(xs):
     """Helper to compute product of a list"""
@@ -9,31 +11,23 @@ def _prod(xs):
 
 def unfolding_singular_values(W: torch.Tensor, mod) -> List[torch.Tensor]:
     """
-    Compute singular values of unfoldings of a weight matrix.
-    
-    For a (M,N) weight we build unfoldings by reshaping to (m1,..,md,n1,..,nd) 
-    and cutting between k and k+1.
-    
+    Singular values of the TT unfoldings of a weight matrix.
+
+    W is the (out_features, in_features) TT-matrix. It is reshaped to the
+    interleaved tensor (m1, n1, ..., md, nd) that TT-SVD factorises, and the
+    k-th unfolding groups the first k (m_i, n_i) pairs as rows (k = 1..d-1).
+    Its rank is the smallest possible TT rank r_k.
+
     Args:
         W: Weight matrix of shape (out_features, in_features)
         mod: Module with in_modes and out_modes attributes
-    
+
     Returns:
         List of singular value tensors for each unfolding
     """
-    Ms = mod.out_modes
-    Ns = mod.in_modes
-    T = W.view(*Ms, *Ns)
-    svs = []
-    d = len(Ns)
-    
-    for k in range(1, d):
-        left = _prod(Ms[:k]) * _prod(Ns[:k])
-        right = W.numel() // left
-        U, S, Vh = torch.linalg.svd(T.reshape(left, right), full_matrices=False)
-        svs.append(S)
-    
-    return svs
+    T = tt_tensor(W, mod.out_modes, mod.in_modes)
+    pairs = [m * n for m, n in zip(mod.out_modes, mod.in_modes)]
+    return [torch.linalg.svdvals(T.reshape(_prod(pairs[:k]), -1)) for k in range(1, len(pairs))]
 
 
 def truncated_svd_singular_values(

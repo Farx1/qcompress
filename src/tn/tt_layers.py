@@ -108,6 +108,15 @@ class TTLinear(nn.Module):
                 self.bias.copy_(dense.bias)
 
 
+def tt_tensor(W: torch.Tensor, out_modes: List[int], in_modes: List[int]) -> torch.Tensor:
+    """(M, N) matrix -> interleaved (m1, n1, ..., md, nd) tensor, so each TT core owns (m_k, n_k).
+
+    Its k-th unfolding (first k pairs as rows) is the matrix TT-SVD truncates at step k.
+    """
+    d = len(in_modes)
+    return W.reshape(*out_modes, *in_modes).permute(*[i for k in range(d) for i in (k, d + k)])
+
+
 def tt_svd_init_from_dense(
     W: torch.Tensor, 
     in_modes: List[int], 
@@ -133,8 +142,7 @@ def tt_svd_init_from_dense(
     assert W.shape == (_prod(out_modes), _prod(in_modes)), \
         f"W shape {tuple(W.shape)} doesn't match ({_prod(out_modes)}, {_prod(in_modes)})"
 
-    # (m1..md, n1..nd) -> interleaved (m1, n1, ..., md, nd) so each core owns (m_k, n_k)
-    rest = W.reshape(*out_modes, *in_modes).permute(*[i for k in range(d) for i in (k, d + k)])
+    rest = tt_tensor(W, out_modes, in_modes)
     cores = []
     for k in range(d - 1):
         mat = rest.reshape(ranks[k] * out_modes[k] * in_modes[k], -1)
