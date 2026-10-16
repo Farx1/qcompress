@@ -152,7 +152,7 @@ is the $\varepsilon_k$ of Section 2.
 
 ## What the tests check
 
-`tests/test_tt_properties.py` (separate PR) checks: exact reconstruction at
+`tests/test_tt_properties.py` (#7) checks: exact reconstruction at
 full rank in float64, the Section 2 bound against an independent SVD of each
 unfolding, the parameter-count formula, the Section 5 claim, `TTLinear` and
 `TTEmbedding` against their dense matrix, and `torch.autograd.gradcheck` on
