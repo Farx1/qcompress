@@ -4,7 +4,8 @@ import torch
 from torch import nn
 from .recipe import Recipe, Target
 from .utils import expand_paths, get_module, set_module, count_parameters
-from src.tn.tt_layers import TTLinear, TTEmbedding, tt_svd_init_from_dense
+from transformers.pytorch_utils import Conv1D
+from src.tn.tt_layers import TTLinear, TTEmbedding
 from src.tn.penalties import attach_penalty_to_module
 
 
@@ -32,11 +33,11 @@ def make_tt_module_from_dense(
     Create a TT module from a dense module.
     
     Args:
-        dense: Dense module (nn.Linear or nn.Embedding)
+        dense: Dense module (nn.Linear, HF Conv1D or nn.Embedding)
         in_modes: Input mode dimensions
         out_modes: Output mode dimensions
         ranks: TT ranks
-        init: Initialization method ('random', 'ttsvd', 'copy')
+        init: 'random', or 'ttsvd' / 'copy' (both: TT-SVD of the dense weight)
     
     Returns:
         TT module (TTLinear or TTEmbedding)
@@ -45,6 +46,8 @@ def make_tt_module_from_dense(
         expected = (dense.num_embeddings, dense.embedding_dim)
     elif isinstance(dense, nn.Linear):
         expected = (dense.in_features, dense.out_features)
+    elif isinstance(dense, Conv1D):
+        expected = tuple(dense.weight.shape)  # (in, out)
     else:
         raise ValueError(f"Unsupported module type {type(dense)} for TT conversion")
     got = (math.prod(in_modes), math.prod(out_modes))
@@ -56,34 +59,20 @@ def make_tt_module_from_dense(
 
     if isinstance(dense, nn.Embedding):
         mod = TTEmbedding(in_modes=in_modes, out_modes=out_modes, ranks=ranks)
-        if init == 'copy':
-            mod.copy_from_dense(dense)
-        elif init == 'ttsvd':
-            # Initialize with TT-SVD
-            W = dense.weight.detach()  # (num_embeddings, embedding_dim)
-            cores = tt_svd_init_from_dense(W, in_modes, out_modes, ranks)
-            with torch.no_grad():
-                for i, core in enumerate(cores):
-                    mod.cores[i].data.copy_(core)
+        if init in ('copy', 'ttsvd'):
+            mod.copy_from_dense(dense.weight)
         return mod
-    elif isinstance(dense, nn.Linear):
+    elif isinstance(dense, (nn.Linear, Conv1D)):
         mod = TTLinear(
             in_modes=in_modes, 
             out_modes=out_modes, 
             ranks=ranks, 
             bias=(dense.bias is not None)
         )
-        if init == 'copy':
-            mod.copy_from_dense(dense)
-        elif init == 'ttsvd':
-            # Initialize with TT-SVD
-            W = dense.weight.detach().t()  # (in_features, out_features) -> (out_features, in_features)
-            cores = tt_svd_init_from_dense(W, in_modes, out_modes, ranks)
-            with torch.no_grad():
-                for i, core in enumerate(cores):
-                    mod.cores[i].data.copy_(core)
-                if dense.bias is not None and mod.bias is not None:
-                    mod.bias.copy_(dense.bias)
+        if init in ('copy', 'ttsvd'):
+            # HF Conv1D (GPT-2) stores weight as (in, out); nn.Linear as (out, in)
+            W = dense.weight.t() if isinstance(dense, Conv1D) else dense.weight
+            mod.copy_from_dense(W, dense.bias)
         return mod
 
 
@@ -171,7 +160,7 @@ def get_compression_stats(model: nn.Module) -> Dict:
     for module in model.modules():
         if isinstance(module, (TTLinear, TTEmbedding)):
             tt_params += count_params(module)
-        elif isinstance(module, (nn.Linear, nn.Embedding)):
+        elif isinstance(module, (nn.Linear, Conv1D, nn.Embedding)):
             dense_params += count_params(module)
     
     return {

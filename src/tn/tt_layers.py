@@ -100,13 +100,15 @@ class TTLinear(nn.Module):
                 self._cached_weight = None
         return self
 
-    def copy_from_dense(self, dense: nn.Linear):
-        """Copy weights from a dense Linear layer (naive initialization)"""
+    def copy_from_dense(self, weight: torch.Tensor, bias: Optional[torch.Tensor] = None):
+        """Init cores by TT-SVD of a dense weight of shape (out_features, in_features)."""
+        cores = tt_svd_init_from_dense(weight.detach(), self.in_modes, self.out_modes, self.ranks)
         with torch.no_grad():
-            # TODO: implement TT-SVD init for better initialization
-            if dense.bias is not None and self.bias is not None:
-                self.bias.copy_(dense.bias)
-
+            for core, c in zip(self.cores, cores):
+                core.copy_(c)
+            if bias is not None and self.bias is not None:
+                self.bias.copy_(bias)
+        self._cached_weight = None
 
 def tt_tensor(W: torch.Tensor, out_modes: List[int], in_modes: List[int]) -> torch.Tensor:
     """(M, N) matrix -> interleaved (m1, n1, ..., md, nd) tensor, so each TT core owns (m_k, n_k).
@@ -219,9 +221,11 @@ class TTEmbedding(nn.Module):
                 self._cached_weight = None
         return self
 
-    def copy_from_dense(self, emb: nn.Embedding):
-        """Copy weights from a dense Embedding layer"""
+    def copy_from_dense(self, weight: torch.Tensor):
+        """Init cores by TT-SVD of an embedding table of shape (num_embeddings, embedding_dim)."""
+        # Cores hold W^T (see reconstruct_weight)
+        cores = tt_svd_init_from_dense(weight.detach().t(), self.in_modes, self.out_modes, self.ranks)
         with torch.no_grad():
-            # TODO: implement TT-SVD init
-            pass
-
+            for core, c in zip(self.cores, cores):
+                core.copy_(c)
+        self._cached_weight = None
