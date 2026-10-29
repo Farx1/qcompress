@@ -89,7 +89,7 @@ def test_tt_svd_init():
 def test_tt_svd_init_embedding():
     """Test de l'initialisation TT-SVD pour les embeddings."""
     # Création d'un poids d'embedding
-    W = torch.randn(16, 8)  # (vocab_size, embedding_dim)
+    W = torch.randn(8, 16)  # (embedding_dim, vocab_size): TTEmbedding stores W^T
     in_modes = [4, 4]
     out_modes = [2, 4]
     ranks = [1, 2, 1]

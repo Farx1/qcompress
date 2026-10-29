@@ -79,18 +79,10 @@ class RecipeValidator:
         for m in target.out_modes:
             out_product *= m
         
-        # Allow some flexibility for embeddings (auto-padding/trimming)
-        if isinstance(module, nn.Embedding):
-            if abs(in_product - expected_in) > expected_in * 0.1:  # 10% tolerance
-                self.warnings.append(
-                    f"Path '{path}': in_modes product {in_product} != num_embeddings {expected_in} "
-                    f"(will be auto-adjusted)"
-                )
-        else:
-            if in_product != expected_in:
-                self.errors.append(
-                    f"Path '{path}': in_modes product {in_product} != in_features {expected_in}"
-                )
+        if in_product != expected_in:
+            self.errors.append(
+                f"Path '{path}': in_modes product {in_product} != {expected_in}"
+            )
         
         if out_product != expected_out:
             self.errors.append(
