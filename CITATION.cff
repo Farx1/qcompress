@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "QCompress: Tensor-Train compression for Transformer layers"
+type: software
+authors:
+  - family-names: Sayad-Barth
+    given-names: Jules
+repository-code: "https://github.com/Farx1/qcompress"
+license: MIT
+references:
+  - type: article
+    title: "Tensor-Train Decomposition"
+    authors:
+      - family-names: Oseledets
+        given-names: I. V.
+    journal: "SIAM Journal on Scientific Computing"
+    volume: 33
+    issue: 5
+    start: 2295
+    end: 2317
+    year: 2011
+    doi: 10.1137/090752286
+  - type: conference-paper
+    title: "Tensorizing Neural Networks"
+    authors:
+      - family-names: Novikov
+        given-names: Alexander
+      - family-names: Podoprikhin
+        given-names: Dmitry
+      - family-names: Osokin
+        given-names: Anton
+      - family-names: Vetrov
+        given-names: Dmitry
+    collection-title: "Advances in Neural Information Processing Systems 28 (NIPS 2015)"
+    year: 2015
+    url: "https://arxiv.org/abs/1509.06569"
