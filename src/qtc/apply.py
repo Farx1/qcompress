@@ -46,6 +46,8 @@ def make_tt_module_from_dense(
         expected = (dense.num_embeddings, dense.embedding_dim)
     elif isinstance(dense, nn.Linear):
         expected = (dense.in_features, dense.out_features)
+    elif isinstance(dense, Conv1D):
+        expected = tuple(dense.weight.shape)  # (in, out)
     else:
         raise ValueError(f"Unsupported module type {type(dense)} for TT conversion")
     got = (math.prod(in_modes), math.prod(out_modes))
