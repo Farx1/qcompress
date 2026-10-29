@@ -6,7 +6,7 @@ targets:
   # Embedding (token embedding)
   - path: transformer.wte
     decomp: TT
-    in_modes:  [17,17,17,10]   # ≈ 49130; will be auto-padded/trimmed to vocab size
+    in_modes:  [17,17,17,10]   # = 49130 != 50257: rejected, products must match exactly
     out_modes: [16,16,3]       # 16*16*3 = 768 (n_embd)
     ranks:     [1, 16, 16, 1]
     init: random   # random | ttsvd (future) | copy
