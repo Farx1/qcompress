@@ -1,3 +1,4 @@
+import math
 from typing import Dict
 import torch
 from torch import nn
@@ -41,6 +42,19 @@ def make_tt_module_from_dense(
         TT module (TTLinear or TTEmbedding)
     """
     if isinstance(dense, nn.Embedding):
+        expected = (dense.num_embeddings, dense.embedding_dim)
+    elif isinstance(dense, nn.Linear):
+        expected = (dense.in_features, dense.out_features)
+    else:
+        raise ValueError(f"Unsupported module type {type(dense)} for TT conversion")
+    got = (math.prod(in_modes), math.prod(out_modes))
+    if got != expected:
+        raise ValueError(
+            f"prod(in_modes), prod(out_modes) = {got} but module needs {expected}; "
+            "mode products must match exactly (no auto-padding)"
+        )
+
+    if isinstance(dense, nn.Embedding):
         mod = TTEmbedding(in_modes=in_modes, out_modes=out_modes, ranks=ranks)
         if init == 'copy':
             mod.copy_from_dense(dense)
@@ -71,8 +85,6 @@ def make_tt_module_from_dense(
                 if dense.bias is not None and mod.bias is not None:
                     mod.bias.copy_(dense.bias)
         return mod
-    else:
-        raise ValueError(f"Unsupported module type {type(dense)} for TT conversion")
 
 
 def apply_recipe_to_model(model: nn.Module, recipe: Recipe) -> Dict:
@@ -105,41 +117,7 @@ def apply_recipe_to_model(model: nn.Module, recipe: Recipe) -> Dict:
                 if tgt.decomp.upper() != 'TT':
                     raise NotImplementedError(f'Only TT is supported, got {tgt.decomp}')
                 
-                # Handle auto-padding/trimming for embeddings
-                in_modes = list(tgt.in_modes)
-                out_modes = list(tgt.out_modes)
-                
-                if isinstance(dense, nn.Embedding):
-                    # Auto-adjust in_modes for embeddings
-                    expected_in = dense.num_embeddings
-                    actual_in = 1
-                    for m in in_modes:
-                        actual_in *= m
-                    
-                    if actual_in != expected_in:
-                        # Adjust by padding or trimming
-                        if actual_in < expected_in:
-                            # Pad with 1s
-                            while actual_in < expected_in:
-                                in_modes.append(1)
-                                actual_in *= 1
-                        else:
-                            # Trim (simple: take first modes that fit)
-                            adjusted = []
-                            prod = 1
-                            for m in in_modes:
-                                if prod * m <= expected_in:
-                                    adjusted.append(m)
-                                    prod *= m
-                                else:
-                                    break
-                            # Fill remaining with 1s
-                            while prod < expected_in:
-                                adjusted.append(1)
-                                prod *= 1
-                            in_modes = adjusted
-                
-                tt = make_tt_module_from_dense(dense, in_modes, out_modes, tgt.ranks, init=tgt.init)
+                tt = make_tt_module_from_dense(dense, tgt.in_modes, tgt.out_modes, tgt.ranks, init=tgt.init)
                 set_module(model, path, tt)
                 summary['replaced'].append(path)
             except Exception as e:

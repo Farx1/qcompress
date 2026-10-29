@@ -1,7 +1,7 @@
 import torch
 import pytest
 import numpy as np
-from src.tn.tt_layers import tt_svd_init_from_dense, TTLinear, TTEmbedding
+from src.tn.tt_layers import tt_svd_init_from_dense, TTLinear, TTEmbedding, _contract_cores
 
 
 def test_tt_svd_init_basic():
@@ -31,29 +31,19 @@ def test_tt_svd_init_reconstruction():
     W = torch.randn(16, 16)
     in_modes = [4, 4]
     out_modes = [4, 4]
-    ranks = [1, 4, 1]  # Rang plus élevé pour meilleure approximation
+    ranks = [1, 16, 1]  # Rang plein: max rank of the (m1*n1, m2*n2) unfolding
     
     # Initialisation TT-SVD
     cores = tt_svd_init_from_dense(W, in_modes, out_modes, ranks)
-    
-    # Reconstruction manuelle
-    # Contracter les cores pour reconstruire le poids
-    import opt_einsum as oe
-    
-    # Équation de contraction: 'a,m1,n1,b, b,m2,n2,c -> m1,m2,n1,n2'
-    eq = 'a,m1,n1,b, b,m2,n2,c -> m1,m2,n1,n2'
-    T = oe.contract(eq, cores[0], cores[1])
-    
-    # Reshape vers la forme originale
-    W_reconstructed = T.reshape(16, 16)
+    W_reconstructed = _contract_cores(cores).reshape(16, 16)
     
     # Calcul de l'erreur de reconstruction
     reconstruction_error = torch.norm(W - W_reconstructed) / torch.norm(W)
     
     print(f"Erreur de reconstruction: {reconstruction_error:.6f}")
     
-    # L'erreur devrait être faible avec un rang suffisant
-    assert reconstruction_error < 0.1, f"Erreur de reconstruction trop élevée: {reconstruction_error}"
+    # Rang plein: reconstruction exacte
+    assert reconstruction_error < 1e-5, f"Erreur de reconstruction trop élevée: {reconstruction_error}"
 
 
 def test_tt_svd_init_embedding():
@@ -180,26 +170,51 @@ def test_tt_svd_init_large_matrix():
     W = torch.randn(64, 64)
     in_modes = [8, 8]
     out_modes = [8, 8]
-    ranks = [1, 8, 1]
+    ranks = [1, 64, 1]  # Rang plein
     
     # Initialisation TT-SVD
     cores = tt_svd_init_from_dense(W, in_modes, out_modes, ranks)
     
     # Vérifications
     assert len(cores) == 2
-    assert cores[0].shape == (1, 8, 8, 8)
-    assert cores[1].shape == (8, 8, 8, 1)
+    assert cores[0].shape == (1, 8, 8, 64)
+    assert cores[1].shape == (64, 8, 8, 1)
     
-    # Test de reconstruction
-    import opt_einsum as oe
-    eq = 'a,m1,n1,b, b,m2,n2,c -> m1,m2,n1,n2'
-    T = oe.contract(eq, cores[0], cores[1])
-    W_reconstructed = T.reshape(64, 64)
+    W_reconstructed = _contract_cores(cores).reshape(64, 64)
     
     reconstruction_error = torch.norm(W - W_reconstructed) / torch.norm(W)
     print(f"Erreur de reconstruction (64x64): {reconstruction_error:.6f}")
     
-    assert reconstruction_error < 0.2, f"Erreur trop élevée pour matrice 64x64: {reconstruction_error}"
+    assert reconstruction_error < 1e-5, f"Erreur trop élevée pour matrice 64x64: {reconstruction_error}"
+
+
+
+def test_tt_svd_d3_full_rank():
+    """d=3, ranks at the unfolding maxima: exact, and loaded into TTLinear."""
+    W = torch.randn(24, 12)  # out = 2*3*4, in = 3*2*2
+    in_modes, out_modes, ranks = [3, 2, 2], [2, 3, 4], [1, 6, 8, 1]
+    layer = TTLinear(in_modes, out_modes, ranks)
+    with torch.no_grad():
+        for core, c in zip(layer.cores, tt_svd_init_from_dense(W, in_modes, out_modes, ranks)):
+            core.copy_(c)
+    assert torch.norm(W - layer.reconstruct_weight()) / torch.norm(W) < 1e-5
+
+
+def test_tt_svd_truncated_error_decreases_with_rank():
+    W = torch.randn(64, 64)
+    errors = []
+    for r in [1, 4, 16, 64]:
+        cores = tt_svd_init_from_dense(W, [8, 8], [8, 8], [1, r, 1])
+        errors.append((torch.norm(W - _contract_cores(cores).reshape(64, 64)) / torch.norm(W)).item())
+    assert all(a > b for a, b in zip(errors, errors[1:])), errors
+    assert errors[-1] < 1e-5
+
+
+def test_contract_cores_alphabet_guard():
+    cores = [torch.ones(1, 1, 1, 1) for _ in range(9)]  # 3*9+1 = 28 > 26 letters
+    with pytest.raises(ValueError):
+        _contract_cores(cores)
+    assert _contract_cores(cores[:8]).numel() == 1  # 3*8+1 = 25 fits
 
 
 if __name__ == '__main__':
