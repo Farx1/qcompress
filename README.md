@@ -1,6 +1,6 @@
 # 🧠 QCompress
 
-A quantum-inspired compression framework for neural networks (LLMs/Transformers) using Tensor-Train (TT) decomposition. I built this project to explore how tensor networks can compress large language models while maintaining performance. The framework includes a real-time visualization dashboard, WebSocket streaming, and a modern Next.js interface with REST API.
+A quantum-inspired compression framework for neural networks (LLMs/Transformers) using Tensor-Train (TT) decomposition. I built this project to explore how tensor networks can compress large language models. The framework includes a real-time visualization dashboard, WebSocket streaming, and a modern Next.js interface with REST API.
 
 ## 📦 Technologies
 
@@ -23,7 +23,7 @@ A quantum-inspired compression framework for neural networks (LLMs/Transformers)
 
 Here's what you can do with QCompress:
 
-- **Tensor-Train Compression**: Compress Linear and Embedding layers using TT decomposition, reducing model size by 5-10x while maintaining performance.
+- **Tensor-Train Compression**: Replace Linear and Embedding layers with TT layers. Size reduction and accuracy depend on the chosen modes and ranks; no ratio has been measured on a trained checkpoint yet (see Status below).
 
 - **Real-time Monitoring**: Watch compression metrics stream live through WebSocket connections. See compression ratios, parameter counts, and model sizes update in real-time as compression progresses.
 
@@ -35,20 +35,28 @@ Here's what you can do with QCompress:
 
 - **Model Support**: Works with Hugging Face models including GPT-2, DistilGPT-2, and DialoGPT. Easy to extend to other transformer architectures.
 
-- **Chat Interface**: Test compressed models interactively. Compare responses from original and compressed models side-by-side with generation time metrics.
-
 - **Model Export**: Export compressed models in multiple formats (PyTorch `.pt`, SafeTensors `.safetensors`, ONNX `.onnx`) for deployment and sharing.
 
 - **Professional UI**: Modern, polished interface with smooth animations, responsive design, and intuitive user experience built with Aceternity UI components.
 
 ### 🎯 Key Capabilities:
 
-- **Automatic Dimension Validation**: The system automatically validates and adjusts TT mode configurations to match layer dimensions.
-- **Entanglement Penalties**: Control compression using Rényi entropy and Shannon entropy penalties to push ranks down.
+- **Dimension Validation**: Recipes are checked so that mode products match layer dimensions.
+- **Entanglement Penalties**: Rényi / Shannon entropy of TT unfoldings, computed by a forward hook. The hook detaches the weights, so the penalty has no gradient and does not currently push ranks down.
 - **TT-SVD Initialization**: Initialize TT cores from dense weights using truncated SVD for better starting points.
 - **Caching Optimization**: Weight reconstruction is cached during evaluation to improve inference speed.
 - **Multi-Format Export**: Export compressed models in PyTorch, SafeTensors, or ONNX formats with metadata for easy deployment.
 - **Real-time Progress Tracking**: Live WebSocket updates with animated progress indicators and detailed metrics visualization.
+
+## ⚠️ Status / known limitations
+
+- **Backend does not use `qtc`**: `backend/compression_service.py` builds `TTLinear` / `TTEmbedding` directly with random cores (no recipe, no TT-SVD), and only for `nn.Linear` / `nn.Embedding`. GPT-2's `Conv1D` layers are skipped.
+- **Benchmark runs on the original model**: `POST /api/benchmark/{job_id}` reloads the uncompressed model by name and evaluates that.
+- **Chat is a stub**: `POST /api/chat` returns a fixed placeholder string.
+- **Results page is mock data**: `frontend/app/[locale]/results/page.tsx` shows hard-coded numbers (Llama 2 7B, GLUE, SQuAD), not a job result.
+- **SafeTensors export fails on tied weights** (e.g. GPT-2 `wte` / `lm_head`), because `save_file` rejects shared tensors.
+- **Recipe engine (`src/qtc`)**: embedding modes must multiply exactly to the vocab size; there is no auto-padding (on `main` a mismatch hangs, fixed in #1). `init: ttsvd` / `copy` and HF `Conv1D` support are being fixed in PRs #2 and #3.
+- **Measured so far** (with #3, random-init `GPT2Config(vocab_size=64, n_positions=16, n_embd=16, n_layer=1, n_head=2)`, wte + c_attn + c_fc + c_proj): full TT rank reproduces the logits (rel. err 4.8e-07) but uses 1.9x *more* parameters (7616 vs 3968); rank 8 gives 1.88x fewer parameters at 0.39 logits rel. err. No trained checkpoint has been measured.
 
 ## 👩🏽‍🍳 The Process
 
@@ -60,9 +68,9 @@ To enable real-time monitoring, I created a FastAPI backend with WebSocket suppo
 
 For the frontend, I built a Next.js dashboard with React components for visualization. Using Recharts, I created real-time graphs showing compression ratios and parameter counts. The WebSocket client automatically reconnects and handles connection errors gracefully.
 
-I also implemented an entanglement penalty system inspired by quantum information theory. By penalizing high-rank unfoldings using Rényi entropy, the system encourages lower-rank decompositions during training.
+I also implemented an entanglement penalty system inspired by quantum information theory. It computes the Rényi entropy of high-rank unfoldings; wiring it into the training loss (it currently works on detached weights) is still to do.
 
-Finally, I added comprehensive error handling, dimension auto-adjustment for embeddings, and caching optimizations to make the system robust and performant. The entire architecture supports both programmatic API usage and interactive web interfaces.
+Finally, I added error handling, dimension validation, and caching optimizations to make the system robust and performant. The entire architecture supports both programmatic API usage and interactive web interfaces.
 
 ## 📚 What I Learned
 
@@ -76,7 +84,7 @@ During this project, I've gained deep insights into tensor networks, neural netw
 
 ### 📏 Dimension Management:
 
-- **Flexible Architecture**: I learned to handle dimension mismatches gracefully, especially for embeddings where vocab sizes don't always factor nicely. Implementing auto-padding and trimming taught me about robust system design.
+- **Flexible Architecture**: I learned to handle dimension mismatches gracefully, especially for embeddings where vocab sizes don't always factor nicely.
 
 - **Validation Logic**: Creating the recipe validator required understanding model architectures deeply. Checking that mode products match layer dimensions and that ranks are valid required careful mathematical reasoning.
 
@@ -121,8 +129,6 @@ This project helped me understand the intersection of quantum-inspired algorithm
 - **Batch Compression**: Support compressing multiple models or layers in parallel for faster experimentation.
 
 - **Performance Profiling**: Add detailed profiling to compare dense vs TT layer performance across different hardware.
-
-- **Export Formats**: Support exporting compressed models to ONNX or other formats for deployment.
 
 ## 🚦 Running the Project
 
@@ -244,7 +250,7 @@ targets:
 Run the test suite:
 
 ```bash
-pytest tests/
+python -m pytest
 ```
 
 ## 📄 License
