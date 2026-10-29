@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional, Tuple
 import torch
 from torch import nn
+from transformers.pytorch_utils import Conv1D
 from .recipe import Recipe, Target
 from .utils import get_module, expand_paths
 
@@ -56,7 +57,7 @@ class RecipeValidator:
     def _validate_module(self, module: nn.Module, target: Target, path: str):
         """Validate a module against target configuration"""
         # Check module type
-        if not isinstance(module, (nn.Linear, nn.Embedding)):
+        if not isinstance(module, (nn.Linear, Conv1D, nn.Embedding)):
             self.warnings.append(
                 f"Path '{path}': Module type {type(module)} may not be supported"
             )
@@ -66,6 +67,8 @@ class RecipeValidator:
         if isinstance(module, nn.Linear):
             expected_in = module.in_features
             expected_out = module.out_features
+        elif isinstance(module, Conv1D):  # weight is (in, out)
+            expected_in, expected_out = module.weight.shape
         else:  # nn.Embedding
             expected_in = module.num_embeddings
             expected_out = module.embedding_dim
