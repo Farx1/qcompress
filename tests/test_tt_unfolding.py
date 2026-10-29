@@ -41,3 +41,20 @@ def test_embedding_penalty_uses_tt_matrix():
     torch.testing.assert_close(emb._extra_loss, expected)
     # rank 2 => second singular value pair only; a wrong unfolding would show more
     assert int((unfolding_singular_values(W_tt, emb)[0] > 1e-6).sum()) == 2
+
+
+def test_penalty_has_gradient_and_lowers_entropy():
+    torch.manual_seed(0)
+    layer = TTLinear([3, 2, 2], [2, 3, 4], [1, 4, 4, 1])
+    attach_penalty_to_module(layer, {"type": "renyi", "alpha": 2.0, "lambda": 1.0})
+    x = torch.randn(1, 12)
+    opt = torch.optim.Adam(layer.cores.parameters(), lr=1e-2)
+    losses = []
+    for _ in range(30):
+        layer.train()(x)
+        opt.zero_grad()
+        layer._extra_loss.backward()
+        assert all(c.grad is not None and c.grad.abs().sum() > 0 for c in layer.cores)
+        opt.step()
+        losses.append(layer._extra_loss.item())
+    assert losses[-1] < 0.9 * losses[0], losses

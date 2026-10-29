@@ -28,34 +28,30 @@ def attach_penalty_to_module(module: nn.Module, cfg: Dict):
         if not module.training:
             return
         
-        try:
-            W = module.reconstruct_weight().detach()
-            if isinstance(module, TTEmbedding):
-                W = W.t()  # reconstruct_weight is (vocab, dim); the TT-matrix is (dim, vocab)
-            if W is None:
-                return
+        W = module.reconstruct_weight()  # no detach: the penalty must reach the TT cores
+        if isinstance(module, TTEmbedding):
+            W = W.t()  # reconstruct_weight is (vocab, dim); the TT-matrix is (dim, vocab)
+        if W is None:
+            return
+        
+        # Compute singular values across a few unfoldings
+        svs = unfolding_singular_values(W, module)
+        loss = 0.0
+        
+        for s in svs:
+            p = s / (s.sum() + 1e-12)
             
-            # Compute singular values across a few unfoldings
-            svs = unfolding_singular_values(W, module)
-            loss = 0.0
+            if penalty_type == 'renyi':
+                ent = renyi_entropy(s, alpha=alpha)
+            elif penalty_type == 'shannon':
+                ent = shannon_entropy(s)
+            else:
+                # nuclear surrogate
+                ent = s.sum()
             
-            for s in svs:
-                p = s / (s.sum() + 1e-12)
-                
-                if penalty_type == 'renyi':
-                    ent = renyi_entropy(s, alpha=alpha)
-                elif penalty_type == 'shannon':
-                    ent = shannon_entropy(s)
-                else:
-                    # nuclear surrogate
-                    ent = s.sum()
-                
-                loss = loss + ent
-            
-            module._extra_loss = lmbd * loss
-        except Exception as e:
-            # Silently fail if penalty computation fails
-            module._extra_loss = 0.0
+            loss = loss + ent
+        
+        module._extra_loss = lmbd * loss
 
     module.register_forward_hook(penalty_hook)
 
